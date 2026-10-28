@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 const BASE = 'https://genshin-builds.com/en';
 const MAX_BUILDS = 3;
 const MAX_SETS = 5;
+const MAX_WEAPONS = 8;
 const MAX_TEAMS = 4;
 const TIER_ORDER = ['SS', 'S', 'A', 'B', 'C', ''];
 
@@ -70,6 +71,10 @@ function extract(id, html) {
       name: cleanText(b.name),
       role: cleanText(b.role),
       recommended: !!b.recommended,
+      weapons: (b.weapons || []).slice(0, MAX_WEAPONS).map((w) => w.id),
+      weaponNotes: Object.fromEntries((b.weapon_notes || [])
+        .filter((n) => (b.weapons || []).slice(0, MAX_WEAPONS).some((w) => w.id === n.id))
+        .map((n) => [n.id, cleanText(n.note)])),
       sets: (b.sets || []).slice(0, MAX_SETS),
       stats: {
         sands: (b.stats || {}).sands || [],
@@ -106,8 +111,13 @@ for (const id of ids) {
   await sleep(300);
 }
 
+// Tên vũ khí tiếng Việt (bản dịch chính thức) để khớp với Vũ_Khí_Database
+const weaponPage = islands(await get('https://genshin-builds.com/vi/weapons'));
+const weaponNames = Object.fromEntries(((weaponPage.WeaponList || {}).weapons || []).map((w) => [w.id, w.name]));
+console.log(`\n${Object.keys(weaponNames).length} vũ khí (tên tiếng Việt)`);
+
 const version = Object.entries(versions).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
-const out = { source: 'genshin-builds.com', version, fetchedAt: new Date().toISOString(), characters };
+const out = { source: 'genshin-builds.com', version, fetchedAt: new Date().toISOString(), weaponNames, characters };
 writeFileSync(join(root, 'data', 'recommendations-data.js'),
   `// Tự động tạo bởi scripts/sync-recommendations.mjs — không sửa tay.\nwindow.GI_REC_DATA = ${JSON.stringify(out)};\n`);
 console.log(`\nĐã ghi data/recommendations-data.js (${Object.keys(characters).length} nhân vật, v${version})`);

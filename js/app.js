@@ -365,6 +365,25 @@
       </div>
       ${rec.builds.length > 1 && build.role !== build.name ? `<div class="muted small">${esc(titleCase(build.role))}</div>` : ''}
       <div class="rec-block">
+        <div class="rec-title">Vũ khí</div>
+        <div class="rec-weapons">
+          ${build.weapons.map((wr, i) => {
+            const w = data.weaponByName[wr.name];
+            const equipped = sameChar && state.weapon === w.name;
+            const sub = Object.entries(w.main)[0];
+            return `
+            <button class="rec-weapon r${w.rarity} ${equipped ? 'applied' : ''}" ${interactive ? `data-rec-weapon="${esc(w.name)}"` : 'disabled'}
+              title="${esc(wr.note || w.name)}${interactive ? (equipped ? '\n(Đang trang bị)' : '\nBấm để trang bị') : ''}">
+              <span class="rec-rank">${i + 1}</span>
+              <span class="rw-icon">${img(w.icon, w.name)}</span>
+              <span class="rw-name">${esc(w.name)}</span>
+              <span class="rw-sub">${stars(w.rarity)}${sub ? ` · ${esc(shortName(sub[0]))} ${GI.fmt(sub[0], sub[1])}` : ''}</span>
+              ${equipped ? '<span class="rw-on">✓</span>' : ''}
+            </button>`;
+          }).join('') || '<span class="muted small">Chưa có gợi ý</span>'}
+        </div>
+      </div>
+      <div class="rec-block">
         <div class="rec-title">Bộ thánh di vật</div>
         ${build.sets.map((opt, i) => {
           const applied = sameChar && recSetLayout(opt.sets).join('|') === curSets;
@@ -469,6 +488,13 @@
       const recTeam = t.closest('[data-rec-team]');
       if (recTeam) return applyRecTeam(+recTeam.dataset.recTeam);
       if (t.closest('[data-rec-main]')) return applyRecMain();
+      const recWeapon = t.closest('[data-rec-weapon]');
+      if (recWeapon) {
+        if (state.weapon !== recWeapon.dataset.recWeapon) state.refine = 1;
+        state.weapon = recWeapon.dataset.recWeapon;
+        commit(renderWeaponPanel, renderComputed);
+        return toast('Đã trang bị ' + state.weapon, 'ok');
+      }
       const recBuild = t.closest('[data-rec-build]');
       if (recBuild) { recBuildSel[recBuild.dataset.char] = +recBuild.dataset.recBuild; return renderRec(); }
       if (t.closest('[data-rec-toggle]')) {

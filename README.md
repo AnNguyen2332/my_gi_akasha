@@ -10,7 +10,7 @@ Thuần HTML/CSS/JS, không cần build — mở `index.html` là chạy.
 | Tab | Tương ứng trong sheet | Mô tả |
 |---|---|---|
 | **Showcase** | `Showcase` + `Thánh_Di_Vật` | Chọn nhân vật, cấp, cung mệnh, vũ khí + tinh luyện, 5 món thánh di vật (bộ, dòng chính, 4 dòng phụ với gợi ý giá trị hợp lệ), đội hình 4 người. Tự tính chỉ số cuối, bộ đang kích hoạt, cộng hưởng nguyên tố, chỉ số cộng thêm, CV. Nhấn vào từng chỉ số để xem nguồn. |
-| **✦ Gợi ý** (trong Showcase) | — | Khi chọn nhân vật: các kiểu build (vd. DPS / Hyperbloom), bộ thánh di vật xếp hạng (4 món hoặc 2+2), dòng chính Cát/Ly/Nón và tối đa 4 đội hình có xếp tier. Bấm “Áp dụng” để điền thẳng vào build. |
+| **✦ Gợi ý** (trong Showcase) | — | Khi chọn nhân vật: các kiểu build (vd. DPS / Hyperbloom), vũ khí xếp hạng (bấm để trang bị), bộ thánh di vật xếp hạng (4 món hoặc 2+2), dòng chính Cát/Ly/Nón và tối đa 4 đội hình có xếp tier. Bấm “Áp dụng” để điền thẳng vào build. |
 | **Nhân Vật** | `Nhân_Vật_Database` | Tra cứu, lọc theo nguyên tố / vũ khí / quốc gia / độ hiếm, xem chỉ số căn bản & đột phá. |
 | **Vũ Khí** | `Vũ_Khí_Database` | Bảng vũ khí, lọc theo loại / độ hiếm, nội tại R1→R5. |
 | **Thánh Di Vật** | `Thánh_Di_Vật_Database` | Các bộ, hiệu ứng 2 món, bảng dòng chính & giá trị dòng phụ. |

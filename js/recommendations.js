@@ -89,6 +89,8 @@ window.GI = window.GI || {};
     mitya: {
       name: 'Mitya', note: 'Theo guide trước phát hành (Game8, Icy Veins)',
       builds: [{ name: 'Stellar-Conduct', role: 'DPS / Sub-DPS', sets: [['disenchantment_in_deep_shadow'], ['gilded_dreams'], ['wanderers_troupe', 'gilded_dreams']],
+        weapons: ['Sắc Lệnh Tinh Tú', 'a_thousand_floating_dreams', 'kaguras_verity', 'wandering_evenstar', 'sacrificial_fragments'],
+        weaponNotes: { 'Sắc Lệnh Tinh Tú': 'Dự đoán: vũ khí riêng (Pháp Khí 5★ mới, chưa có guide)' },
         stats: { sands: ['Elemental Mastery'], goblet: ['Elemental Mastery'], circlet: ['CRIT Rate', 'CRIT DMG'] } }],
       teams: [{ name: 'Stellar-Conduct', tier: '', chars: ['mitya', 'odette', 'yae_miko', 'valeriy'] },
         { name: 'Stellar-Conduct on-field', tier: '', chars: ['mitya', 'odette', 'valeriy', 'sucrose'] }],
@@ -96,12 +98,15 @@ window.GI = window.GI || {};
     valeriy: {
       name: 'Valeriy', guess: true,
       builds: [{ name: 'Stellar Sub-DPS', role: 'Sub-DPS', sets: [['heart_of_the_furnace'], ['noblesse_oblige'], ['18atk_set', 'a_day_carved_from_rising_winds']],
+        weapons: ['mistsplitter_reforged', 'freedomsworn', 'favonius_sword', 'sacrificial_sword', 'lions_roar'],
         stats: { sands: ['ATK%', 'Energy Recharge'], goblet: ['Electro DMG Bonus', 'ATK%'], circlet: ['CRIT Rate', 'CRIT DMG'] } }],
       teams: [{ name: 'Stellar-Conduct', tier: '', chars: ['valeriy', 'mitya', 'odette', 'yae_miko'] }],
     },
     danica: {
       name: 'Danica', guess: true,
       builds: [{ name: 'Stellar-Conduct DPS', role: 'DPS', sets: [['disenchantment_in_deep_shadow'], ['gilded_dreams'], ['18atk_set', 'a_day_carved_from_rising_winds']],
+        weapons: ['Trấn Danica', 'verdict', 'redhorn_stonethresher', 'serpent_spine', 'tidal_shadow'],
+        weaponNotes: { 'Trấn Danica': 'Dự đoán: vũ khí riêng (Trọng Kiếm 5★ mới)' },
         stats: { sands: ['ATK%', 'Elemental Mastery'], goblet: ['Electro DMG Bonus', 'ATK%'], circlet: ['CRIT Rate', 'CRIT DMG'] } }],
       teams: [{ name: 'Stellar-Conduct', tier: '', chars: ['danica', 'tsaritsa', 'odette', 'yae_miko'] },
         { name: 'Stellar-Conduct', tier: '', chars: ['danica', 'mitya', 'odette', 'alyosha'] }],
@@ -109,6 +114,8 @@ window.GI = window.GI || {};
     tsaritsa: {
       name: 'Tsaritsa', guess: true, note: 'Theo leak 7.3 — chưa chính thức',
       builds: [{ name: 'Stellar DPS', role: 'Main / Sub-DPS', sets: [['disenchantment_in_deep_shadow'], ['scarlet_proof'], ['18atk_set', 'a_day_carved_from_rising_winds']],
+        weapons: ['Trấn Tsaritsa', 'aqua_simulacra', 'polar_star', 'thundering_pulse', 'the_first_great_magic', 'slingshot'],
+        weaponNotes: { 'Trấn Tsaritsa': 'Dự đoán: vũ khí riêng (Cung 5★ mới)' },
         stats: { sands: ['ATK%'], goblet: ['Cryo DMG Bonus', 'ATK%'], circlet: ['CRIT Rate', 'CRIT DMG'] } }],
       teams: [{ name: 'Stellar-Conduct', tier: '', chars: ['tsaritsa', 'danica', 'odette', 'yae_miko'] },
         { name: 'Stellar-Conduct', tier: '', chars: ['tsaritsa', 'odette', 'danica', 'mitya'] }],
@@ -149,6 +156,27 @@ window.GI = window.GI || {};
     return { sets: apply, items, four, pick: !four && items.length > 2 };
   }
 
+  // id vũ khí (hoặc tên tiếng Việt, cho MANUAL) -> vũ khí trong Vũ_Khí_Database, đúng loại vũ khí của nhân vật
+  function mapWeapons(b, c, data) {
+    const names = SOURCE.weaponNames || {};
+    const byNorm = {};
+    for (const w of data.weapons) byNorm[norm(w.name)] = w.name;
+    const out = [];
+    for (const id of b.weapons || []) {
+      const name = data.weaponByName[id] ? id : byNorm[norm(names[id])];
+      const w = name && data.weaponByName[name];
+      if (!w || w.type !== c.weaponType || out.some((x) => x.name === name)) continue;
+      out.push({ name, note: (b.weaponNotes || {})[id] || '' });
+    }
+    return out;
+  }
+
+  // Gợi ý vũ khí khi không có dữ liệu: vũ khí cùng loại, độ hiếm cao, ưu tiên dòng chính hợp chỉ số đột phá
+  function fallbackWeapons(c, data) {
+    return data.weapons.filter((w) => w.type === c.weaponType && w.rarity >= 4)
+      .sort((a, b) => b.rarity - a.rarity || b.baseAtk - a.baseAtk).slice(0, 5).map((w) => w.name);
+  }
+
   // Gợi ý tự động khi cả nguồn lẫn MANUAL đều chưa có nhân vật
   function fallback(c, data) {
     const asc = Object.entries(c.asc).filter(([, v]) => v).map(([k]) => k)[0] || '';
@@ -163,6 +191,7 @@ window.GI = window.GI || {};
         : { name: 'Support', role: 'Support', sets: [['noblesse_oblige'], ['tenacity_of_the_millelith']], stats: { sands: ['Energy Recharge', 'HP%'], goblet: ['HP%'], circlet: ['HP%'] } };
     const sameNation = data.characters.filter((x) => x.name !== c.name && x.nation === c.nation).sort((a, b) => b.rarity - a.rarity).slice(0, 2);
     const teamNames = [...sameNation.map((x) => x.name), 'Bennett', 'Kaedehara Kazuha', 'Furina'].filter((n) => n !== c.name).slice(0, 3);
+    build.weapons = fallbackWeapons(c, data);
     return { name: c.name, auto: true, builds: [build], teamNames: [teamNames] };
   }
 
@@ -176,6 +205,7 @@ window.GI = window.GI || {};
     const builds = raw.builds.map((b) => ({
       name: b.name,
       role: b.role,
+      weapons: mapWeapons(b, c, data),
       sets: b.sets.map((ids) => mapSetOption(ids, data)).filter(Boolean),
       mainStats: ['sands', 'goblet', 'circlet'].map((k) => (b.stats[k] || []).map(mapStat)),
     })).filter((b) => b.sets.length || b.mainStats.some((s) => s.length));

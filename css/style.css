@@ -270,6 +270,24 @@ select:focus, input:focus { border-color: var(--gold-2); }
 .rec-tier.t-SS { color: #1a1408; background: linear-gradient(180deg, #ffe39a, #e0a93f); border-color: #e0a93f; }
 .rec-tier.t-S { color: #f0d48c; border-color: var(--gold-2); }
 .rec-src { margin-top: 10px; }
+.rec-weapons { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.rec-weapon {
+  position: relative; display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center;
+  padding: 6px 8px; border-radius: 10px; border: 1px solid transparent; background: var(--panel-2); text-align: left; cursor: pointer;
+}
+.rec-weapon:disabled { cursor: default; }
+.rec-weapon:not(:disabled):hover { border-color: var(--gold-2); }
+.rec-weapon.applied { border-color: rgba(111, 211, 154, .6); }
+.rec-weapon .rec-rank { position: absolute; top: -5px; left: -5px; width: 18px; height: 18px; font-size: 10px; }
+.rw-icon { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 8px; overflow: hidden; background: var(--panel); }
+.rec-weapon.r5 .rw-icon { background: linear-gradient(160deg, #6b4a2a, #b07a3b); }
+.rec-weapon.r4 .rw-icon { background: linear-gradient(160deg, #3f3466, #7a5bb8); }
+.rec-weapon.r3 .rw-icon { background: linear-gradient(160deg, #2c4466, #4a7fc4); }
+.rw-icon img { width: 100%; height: 100%; object-fit: contain; }
+.rw-name { font-size: 12px; font-weight: 600; line-height: 1.2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-sub { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rw-sub, .rw-name { padding-right: 12px; }
+.rw-on { position: absolute; top: 4px; right: 6px; color: var(--ok); font-size: 12px; }
 
 /* ---------- filters & tiles ---------- */
 .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
