@@ -423,18 +423,88 @@
       <div class="muted tiny rec-src">Nguồn: ${esc(rec.source)}${rec.note ? ' · ' + esc(rec.note) : ''}</div>`;
   }
 
+  // Thành viên đội đang xem gợi ý (mặc định: nhân vật chính)
+  let recFocus = '';
+  const focusName = () => ([state.character, ...state.team].includes(recFocus) && recFocus ? recFocus : state.character);
+
   function renderRec() {
     const panel = $('#recPanel');
-    const c = data.charByName[state.character];
+    const c = data.charByName[focusName()];
     const rec = c && GI.getRecommendation(data, c.name);
     if (!panel || !rec) return;
     const open = readJSON('gi-akasha:rec-open', true);
+    const members = [state.character, ...state.team].filter((n) => data.charByName[n]);
+    const isMain = c.name === state.character;
     panel.innerHTML = `
       <div class="panel-head">
         <h3>✦ Gợi ý cho ${esc(c.name)}</h3>
         <button class="btn btn-sm btn-ghost" data-rec-toggle>${open ? 'Thu gọn' : 'Mở rộng'}</button>
       </div>
-      ${open ? recHtml(rec, c, true) : ''}`;
+      ${open ? `
+      <div class="rec-focus">
+        ${members.map((n, i) => {
+          const m = data.charByName[n];
+          return `<button class="rec-focus-btn ${n === c.name ? 'on' : ''}" data-rec-focus="${esc(n)}" style="--ec:${ELEMENT_COLORS[m.element] || '#888'}"
+            title="${i === 0 ? 'Nhân vật chính' : 'Đồng đội'}">${img(m.icon, n)}<span>${esc(n)}</span>${i === 0 ? '<small>Chính</small>' : ''}</button>`;
+        }).join('')}
+      </div>
+      ${isMain ? '' : `
+      <div class="note rec-switch-note">
+        <span><b>${esc(c.name)}</b> đang là đồng đội. Bấm “Áp dụng” / trang bị sẽ chuyển ${esc(c.name)} lên làm nhân vật chính,
+        ${esc(state.character)} vào vị trí của ${esc(c.name)} trong đội. Build của mỗi nhân vật được giữ riêng.</span>
+        <button class="btn btn-sm" data-rec-switch>Build ${esc(c.name)} →</button>
+      </div>`}
+      ${recHtml(rec, c, true)}` : ''}`;
+  }
+
+  // ---------- build riêng cho từng nhân vật ----------
+  const CHAR_BUILDS_KEY = 'gi-akasha:char-builds';
+  const BUILD_FIELDS = ['level', 'constellation', 'weapon', 'weaponLevel', 'refine', 'artifacts'];
+
+  function stashBuild() {
+    if (!state.character) return;
+    const all = readJSON(CHAR_BUILDS_KEY, {});
+    all[state.character] = JSON.parse(JSON.stringify(Object.fromEntries(BUILD_FIELDS.map((k) => [k, state[k]]))));
+    writeJSON(CHAR_BUILDS_KEY, all);
+  }
+
+  function restoreBuild(name) {
+    const saved = readJSON(CHAR_BUILDS_KEY, {})[name];
+    if (!saved) return false;
+    Object.assign(state, normalizeState({ ...state, ...saved, character: name }), { team: state.team });
+    return true;
+  }
+
+  function bestWeaponFor(c) {
+    const best = data.weapons.filter((x) => x.type === c.weaponType).sort((a, b) => b.rarity - a.rarity || b.baseAtk - a.baseAtk)[0];
+    return best ? best.name : '';
+  }
+
+  // Đưa đồng đội lên làm nhân vật chính, nhân vật chính cũ vào chỗ của họ
+  function switchMain(name, silent) {
+    if (name === state.character || !data.charByName[name]) return;
+    const old = state.character;
+    stashBuild();
+    state.team = state.team.map((n) => (n === name ? old : n));
+    state.character = name;
+    if (!restoreBuild(name)) {
+      const c = data.charByName[name];
+      Object.assign(state, { level: 90, constellation: 0, weapon: bestWeaponFor(c), weaponLevel: 90, refine: 1,
+        artifacts: [0, 1, 2, 3, 4].map((i) => GI.emptyArtifact(i)) });
+    }
+    recFocus = name;
+    commit(renderBuilder);
+    if (!silent) toast(`Đang build ${name} · ${old} chuyển vào đội`);
+  }
+
+  // Thao tác "Áp dụng" luôn áp lên nhân vật đang xem gợi ý
+  function focusToMain() {
+    const f = focusName();
+    if (f !== state.character) {
+      const old = state.character;
+      switchMain(f, true);
+      toast(`Đã chuyển sang build ${f} (${old} vào đội)`);
+    }
   }
 
   function currentRecBuild() {
@@ -483,6 +553,10 @@
       if (team && !team.disabled) return pickCharacter((name) => { state.team[+team.dataset.team - 1] = name; commit(renderTeam, renderComputed); }, true);
       const cons = t.closest('[data-cons]');
       if (cons) { state.constellation = +cons.dataset.cons; return commit(renderBuilder); }
+      const recFocusBtn = t.closest('[data-rec-focus]');
+      if (recFocusBtn) { recFocus = recFocusBtn.dataset.recFocus; return renderRec(); }
+      if (t.closest('[data-rec-switch]')) return switchMain(focusName());
+      if (t.closest('[data-rec-set], [data-rec-team], [data-rec-main], [data-rec-weapon]')) focusToMain();
       const recSet = t.closest('[data-rec-set]');
       if (recSet) return applyRecSet(+recSet.dataset.recSet);
       const recTeam = t.closest('[data-rec-team]');
@@ -559,15 +633,18 @@
 
   function selectCharacter(name) {
     const prev = data.charByName[state.character];
+    if (prev && prev.name !== name) stashBuild();
     state.character = name;
     state.team = state.team.map((n) => (n === name ? '' : n));
+    recFocus = name;
     const c = data.charByName[name];
-    const w = data.weaponByName[state.weapon];
-    if (!w || (prev && c && w.type !== c.weaponType)) {
-      // tự chọn vũ khí cùng loại có độ hiếm cao nhất
-      const best = data.weapons.filter((x) => x.type === c.weaponType).sort((a, b) => b.rarity - a.rarity || b.baseAtk - a.baseAtk)[0];
-      state.weapon = best ? best.name : '';
-      state.refine = 1;
+    if (!(prev && prev.name !== name && restoreBuild(name))) {
+      const w = data.weaponByName[state.weapon];
+      if (!w || (prev && c && w.type !== c.weaponType)) {
+        // tự chọn vũ khí cùng loại có độ hiếm cao nhất
+        state.weapon = bestWeaponFor(c);
+        state.refine = 1;
+      }
     }
     commit(renderBuilder);
     if (prev && prev.name !== name) toast(`Đã chọn ${name} — xem gợi ý build & đội hình ở mục ✦ Gợi ý`);
