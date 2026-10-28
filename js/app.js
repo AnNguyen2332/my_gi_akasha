@@ -378,6 +378,7 @@
               <span class="rw-icon">${img(w.icon, w.name)}</span>
               <span class="rw-name">${esc(w.name)}</span>
               <span class="rw-sub">${stars(w.rarity)}${sub ? ` · ${esc(shortName(sub[0]))} ${GI.fmt(sub[0], sub[1])}` : ''}</span>
+              ${wr.note && wr.note.length <= 32 ? `<span class="rw-note">${esc(wr.note)}</span>` : ''}
               ${equipped ? '<span class="rw-on">✓</span>' : ''}
             </button>`;
           }).join('') || '<span class="muted small">Chưa có gợi ý</span>'}
@@ -392,7 +393,7 @@
             <span class="rec-rank">${i + 1}</span>
             <div class="rec-set-icons">${[...new Set(opt.sets)].map((n) => img((data.setByName[n] || {}).pieces?.find(Boolean), n)).join('')}</div>
             <div class="rec-body">
-              <div class="rec-name">${recSetName(opt)}</div>
+              <div class="rec-name">${recSetName(opt)}${opt.note ? ` <span class="rec-note">${esc(opt.note)}</span>` : ''}</div>
               <div class="muted tiny">${opt.four ? esc(setBonusText(opt.sets[0])) : `Áp dụng: ${opt.sets.map(esc).join(' + ')}`}</div>
             </div>
             ${interactive ? `<button class="btn btn-sm ${applied ? 'btn-ghost' : ''}" data-rec-set="${i}">${applied ? '✓ Đang dùng' : 'Áp dụng'}</button>` : ''}
@@ -412,15 +413,19 @@
           return `
           <div class="rec-item ${applied ? 'applied' : ''}">
             ${t.tier ? `<span class="rec-tier t-${esc(t.tier)}" title="Xếp hạng đội">${esc(t.tier)}</span>` : ''}
+            <div class="rec-body">
+            ${t.name ? `<div class="muted tiny rec-team-name">${esc(t.name)}</div>` : ''}
             <div class="rec-team">${[c.name, ...t.members].map((n) => {
               const m = data.charByName[n];
               return `<span class="rec-member" title="${esc(n)}" style="--ec:${ELEMENT_COLORS[m.element] || '#888'}">${img(m.icon, n)}<small>${esc(n)}</small></span>`;
             }).join('')}${Array(t.missing).fill('<span class="rec-member" title="Nhân vật không có trong database (vd. Nhà Lữ Hành)"><span class="img-ph">?</span><small>Khác</small></span>').join('')}</div>
+            ${t.alts && t.alts.length ? `<div class="muted tiny">Thay thế: ${t.alts.map(esc).join(', ')}</div>` : ''}
+            </div>
             ${interactive ? `<button class="btn btn-sm ${applied ? 'btn-ghost' : ''}" data-rec-team="${i}">${applied ? '✓ Đang dùng' : 'Áp dụng'}</button>` : ''}
           </div>`;
         }).join('') || '<span class="muted small">Chưa có gợi ý</span>'}
       </div>
-      <div class="muted tiny rec-src">Nguồn: ${esc(rec.source)}${rec.note ? ' · ' + esc(rec.note) : ''}</div>`;
+      <div class="muted tiny rec-src">Nguồn: ${rec.url ? `<a href="${esc(rec.url)}" target="_blank" rel="noopener">${esc(rec.source)}</a>` : esc(rec.source)}${rec.note ? ' · ' + esc(rec.note) : ''}</div>`;
   }
 
   // Thành viên đội đang xem gợi ý (mặc định: nhân vật chính)

@@ -285,14 +285,14 @@ select:focus, input:focus { border-color: var(--gold-2); }
 @media (max-width: 760px) { .rec-focus { grid-template-columns: repeat(2, 1fr); } }
 .rec-weapons { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .rec-weapon {
-  position: relative; display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center;
+  position: relative; display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto auto; column-gap: 8px; align-items: center;
   padding: 6px 8px; border-radius: 10px; border: 1px solid transparent; background: var(--panel-2); text-align: left; cursor: pointer;
 }
 .rec-weapon:disabled { cursor: default; }
 .rec-weapon:not(:disabled):hover { border-color: var(--gold-2); }
 .rec-weapon.applied { border-color: rgba(111, 211, 154, .6); }
 .rec-weapon .rec-rank { position: absolute; top: -5px; left: -5px; width: 18px; height: 18px; font-size: 10px; }
-.rw-icon { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 8px; overflow: hidden; background: var(--panel); }
+.rw-icon { grid-row: 1 / 4; width: 40px; height: 40px; border-radius: 8px; overflow: hidden; background: var(--panel); }
 .rec-weapon.r5 .rw-icon { background: linear-gradient(160deg, #6b4a2a, #b07a3b); }
 .rec-weapon.r4 .rw-icon { background: linear-gradient(160deg, #3f3466, #7a5bb8); }
 .rec-weapon.r3 .rw-icon { background: linear-gradient(160deg, #2c4466, #4a7fc4); }
@@ -300,6 +300,10 @@ select:focus, input:focus { border-color: var(--gold-2); }
 .rw-name { font-size: 12px; font-weight: 600; line-height: 1.2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rw-sub { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rw-sub, .rw-name { padding-right: 12px; }
+.rw-note { font-size: 10px; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; }
+.rec-note { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 6px; font-size: 10px; color: var(--gold); border: 1px solid var(--gold-2); vertical-align: 1px; }
+.rec-team-name { margin-bottom: 3px; }
+.rec-src a { color: inherit; text-decoration: underline dotted; }
 .rw-on { position: absolute; top: 4px; right: 6px; color: var(--ok); font-size: 12px; }
 
 /* ---------- filters & tiles ---------- */

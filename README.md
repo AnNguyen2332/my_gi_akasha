@@ -36,14 +36,16 @@ node scripts/sync-data.mjs
 
 ### Dữ liệu gợi ý build
 
-- `data/recommendations-data.js` được tạo từ [genshin-builds.com](https://genshin-builds.com) (hiện là bản v7.1). Cập nhật khi có patch mới:
+- `data/recommendations-data.js` được tạo từ [Game8](https://game8.co/games/Genshin-Impact/archives/530535). Game8 cập nhật theo meta nhanh nhất (vd. Stellar-Swirl, Stellar-Conduct) và mỗi nhân vật đều có ngày cập nhật riêng. Nhân vật nào Game8 chưa có trang build thì lấy từ [genshin-builds.com](https://genshin-builds.com). Cập nhật khi có patch mới:
 
 ```bash
 node scripts/sync-recommendations.mjs
 ```
 
+  Để thử bộ đọc trên một trang đã tải về: `node scripts/sync-recommendations.mjs trang.html`.
+
 - `js/recommendations.js` đổi tên bộ / chỉ số / nhân vật từ tiếng Anh sang tên trong database. Ở đây cũng có các nhân vật mà nguồn
-  chưa có trang (`MANUAL`: Mitya, Valeriy, Danica, Tsaritsa — 3 nhân vật sau là dự đoán). Khi nguồn có trang, dữ liệu nguồn sẽ tự được ưu tiên.
+  chưa có trang (`MANUAL`: Danica, Tsaritsa — dự đoán theo bộ kỹ năng). Khi nguồn có trang, dữ liệu nguồn sẽ tự được ưu tiên.
 - Nếu nguồn dùng một bộ mới chưa có trong bảng `SETS`, bộ đó sẽ bị bỏ qua. Lúc đó chỉ cần thêm 1 dòng `id: 'Tên tiếng Việt'` vào bảng.
 
 ## Cấu trúc

@@ -1,5 +1,5 @@
 // Gợi ý build & đội hình cho từng nhân vật.
-// Dữ liệu chính: data/recommendations-data.js (đồng bộ từ genshin-builds.com bằng scripts/sync-recommendations.mjs).
+// Dữ liệu chính: data/recommendations-data.js (đồng bộ từ Game8, dự phòng genshin-builds.com, bằng scripts/sync-recommendations.mjs).
 // File này chỉ đổi tên tiếng Anh -> tên trong database và bổ sung nhân vật mà nguồn chưa có.
 window.GI = window.GI || {};
 
@@ -52,6 +52,10 @@ window.GI = window.GI || {};
     maiden_beloved: 'Thiếu Nữ Đáng Yêu',
     instructor: 'Giáo Quan',
     the_exile: 'Kẻ Lưu Đày',
+    defenders_will: 'Trái Tim Thủ Hộ',
+    martial_artist: 'Võ Nhân',
+    gambler: 'Con Bạc',
+    berserker: 'Cuồng Chiến',
     thundersoother: 'Tôn Giả Trầm Lặng',
     lavawalker: 'Hiền Nhân Bốc Lửa',
   };
@@ -86,22 +90,6 @@ window.GI = window.GI || {};
 
   // Nhân vật nguồn chưa có trang (bản mới / chưa ra mắt). guess = dự đoán theo bộ kỹ năng.
   const MANUAL = {
-    mitya: {
-      name: 'Mitya', note: 'Theo guide trước phát hành (Game8, Icy Veins)',
-      builds: [{ name: 'Stellar-Conduct', role: 'DPS / Sub-DPS', sets: [['disenchantment_in_deep_shadow'], ['gilded_dreams'], ['wanderers_troupe', 'gilded_dreams']],
-        weapons: ['Sắc Lệnh Tinh Tú', 'a_thousand_floating_dreams', 'kaguras_verity', 'wandering_evenstar', 'sacrificial_fragments'],
-        weaponNotes: { 'Sắc Lệnh Tinh Tú': 'Dự đoán: vũ khí riêng (Pháp Khí 5★ mới, chưa có guide)' },
-        stats: { sands: ['Elemental Mastery'], goblet: ['Elemental Mastery'], circlet: ['CRIT Rate', 'CRIT DMG'] } }],
-      teams: [{ name: 'Stellar-Conduct', tier: '', chars: ['mitya', 'odette', 'yae_miko', 'valeriy'] },
-        { name: 'Stellar-Conduct on-field', tier: '', chars: ['mitya', 'odette', 'valeriy', 'sucrose'] }],
-    },
-    valeriy: {
-      name: 'Valeriy', guess: true,
-      builds: [{ name: 'Stellar Sub-DPS', role: 'Sub-DPS', sets: [['heart_of_the_furnace'], ['noblesse_oblige'], ['18atk_set', 'a_day_carved_from_rising_winds']],
-        weapons: ['mistsplitter_reforged', 'freedomsworn', 'favonius_sword', 'sacrificial_sword', 'lions_roar'],
-        stats: { sands: ['ATK%', 'Energy Recharge'], goblet: ['Electro DMG Bonus', 'ATK%'], circlet: ['CRIT Rate', 'CRIT DMG'] } }],
-      teams: [{ name: 'Stellar-Conduct', tier: '', chars: ['valeriy', 'mitya', 'odette', 'yae_miko'] }],
-    },
     danica: {
       name: 'Danica', guess: true,
       builds: [{ name: 'Stellar-Conduct DPS', role: 'DPS', sets: [['disenchantment_in_deep_shadow'], ['gilded_dreams'], ['18atk_set', 'a_day_carved_from_rising_winds']],
@@ -135,25 +123,42 @@ window.GI = window.GI || {};
     cacheFor = data;
     idToName = {}; nameToId = {};
     const byNorm = {};
-    for (const [id, c] of Object.entries(ALL)) { byNorm[norm(id)] = id; byNorm[norm(c.name)] = id; }
+    for (const [id, c] of Object.entries(ALL)) {
+      byNorm[norm(id)] = id;
+      if (c.fullName) byNorm[norm(c.fullName)] = id;
+      if (!byNorm[norm(c.name)]) byNorm[norm(c.name)] = id;
+    }
     for (const c of data.characters) {
       const id = ALIASES[c.name] || byNorm[norm(c.name)];
       if (id) { idToName[id] = c.name; nameToId[c.name] = id; }
     }
   }
 
-  function mapSetOption(ids, data) {
+  // id bộ -> tên trong database (chấp nhận khác biệt nhỏ giữa các nguồn, vd. ..._shadows / ..._shadow)
+  const SET_NORM = Object.fromEntries(Object.keys(SETS).map((k) => [norm(k).replace(/s$/, ''), k]));
+  const setKey = (id) => (SETS[id] ? id : SET_NORM[norm(id).replace(/s$/, '')] || id);
+
+  // Nhãn xếp hạng của Game8 -> tiếng Việt
+  const LABELS = [
+    [/^best[- ]in[- ]slot/i, 'Tốt nhất'], [/^best for /i, 'Tốt nhất cho '], [/^best in general/i, 'Tốt nhất (đội thường)'], [/^best\b/i, 'Tốt nhất'],
+    [/^alt(ernative|ernate|\.)? for /i, 'Thay thế cho '], [/^alt(ernative|ernate|\.)?(?=\s|$)/i, 'Thay thế'],
+    [/^4-star/i, '4★'], [/\(on-field\)/i, '(trên sân)'], [/\(off-field\)/i, '(hậu trường)'],
+    [/\(event\)/i, '(sự kiện)'], [/\(craftable\)|\(crafted\)/i, '(rèn)'],
+  ];
+  const label = (s) => LABELS.reduce((t, [re, v]) => t.replace(re, v), String(s || '')).trim();
+
+  function mapSetOption(ids, data, note) {
     const seen = new Set();
     const items = ids.map((id) => {
       const g = GENERIC[id];
-      const name = SETS[g ? g[0] : id];
+      const name = SETS[setKey(g ? g[0] : id)];
       return name && data.setByName[name] ? { name, generic: g ? g[1] : '' } : null;
     }).filter((it) => it && !seen.has(it.generic || it.name) && seen.add(it.generic || it.name));
     if (!items.length) return null;
     // 1 bộ = 4 món · 2 bộ = 2+2 · từ 3 bộ = 2 món + 2 món chọn trong danh sách (áp dụng 2 bộ đầu)
     const four = ids.length === 1;
     const apply = four ? [items[0].name] : [items[0].name, (items[1] || items[0]).name];
-    return { sets: apply, items, four, pick: !four && items.length > 2 };
+    return { sets: apply, items, four, pick: !four && items.length > 2, note: label(note) };
   }
 
   // id vũ khí (hoặc tên tiếng Việt, cho MANUAL) -> vũ khí trong Vũ_Khí_Database, đúng loại vũ khí của nhân vật
@@ -166,7 +171,7 @@ window.GI = window.GI || {};
       const name = data.weaponByName[id] ? id : byNorm[norm(names[id])];
       const w = name && data.weaponByName[name];
       if (!w || w.type !== c.weaponType || out.some((x) => x.name === name)) continue;
-      out.push({ name, note: (b.weaponNotes || {})[id] || '' });
+      out.push({ name, note: label((b.weaponNotes || {})[id]) });
     }
     return out;
   }
@@ -206,7 +211,7 @@ window.GI = window.GI || {};
       name: b.name,
       role: b.role,
       weapons: mapWeapons(b, c, data),
-      sets: b.sets.map((ids) => mapSetOption(ids, data)).filter(Boolean),
+      sets: b.sets.map((ids) => mapSetOption(ids, data, (b.setNotes || {})[ids.join('+')])).filter(Boolean),
       mainStats: ['sands', 'goblet', 'circlet'].map((k) => (b.stats[k] || []).map(mapStat)),
     })).filter((b) => b.sets.length || b.mainStats.some((s) => s.length));
 
@@ -216,7 +221,9 @@ window.GI = window.GI || {};
       teams = (raw.teams || []).map((t) => {
         const others = t.chars.filter((x) => x !== id);
         const members = others.map((x) => idToName[x]).filter((n) => n && n !== name);
-        return { name: t.name, tier: t.tier, members, missing: others.length - members.length };
+        // Lựa chọn thay thế cho từng vị trí (Game8), chỉ giữ nhân vật có trong database
+        const alts = [...new Set((t.alts || []).flat().map((x) => idToName[x]).filter((n) => n && n !== name && !members.includes(n)))];
+        return { name: t.name, tier: t.tier, members, alts, missing: others.length - members.length };
       }).filter((t) => t.members.length)
         // đội có đủ thành viên trong database lên trước
         .sort((a, b) => a.missing - b.missing);
@@ -225,9 +232,17 @@ window.GI = window.GI || {};
     return {
       builds, teams,
       guess: !!raw.guess, auto: !!raw.auto, note: raw.note || '',
-      source: raw.auto ? 'Tự động' : (SOURCE.characters[id] ? `${SOURCE.source || 'genshin-builds.com'} · v${SOURCE.version}` : 'Bổ sung thủ công'),
+      source: raw.auto ? 'Tự động' : !SOURCE.characters[id] ? 'Bổ sung thủ công'
+        : raw.source === 'g8' ? `Game8${raw.updated ? ' · cập nhật ' + fmtDate(raw.updated) : ''}`
+          : `genshin-builds.com${raw.version ? ' · v' + raw.version : ''}`,
+      url: raw.url || '',
     };
   };
 
-  GI.REC_META = { source: SOURCE.source, version: SOURCE.version, fetchedAt: SOURCE.fetchedAt };
+  function fmtDate(s) {
+    const d = new Date(String(s).replace(/\s+\d+:\d+\s*(AM|PM)?$/i, ''));
+    return isNaN(d) ? s : d.toLocaleDateString('vi-VN');
+  }
+
+  GI.REC_META = { source: SOURCE.source, fetchedAt: SOURCE.fetchedAt };
 })(window.GI);
