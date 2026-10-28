@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GI Akasha UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">✦</span>
+      <div>
+        <div class="brand-title">GI Akasha</div>
+        <div class="brand-sub">Build &amp; Showcase</div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-view="builder" class="active">Showcase</button>
+      <button data-view="characters">Nhân Vật</button>
+      <button data-view="weapons">Vũ Khí</button>
+      <button data-view="sets">Thánh Di Vật</button>
+      <button data-view="builds">Build đã lưu</button>
+    </nav>
+    <div class="data-status">
+      <span id="dataInfo" class="pill"></span>
+      <button id="syncBtn" class="btn btn-ghost" title="Tải dữ liệu mới nhất từ Google Sheet">⟳ Đồng bộ Sheet</button>
+      <a id="sheetLink" class="btn btn-ghost" target="_blank" rel="noopener">Mở Sheet ↗</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-builder" class="view active"></section>
+    <section id="view-characters" class="view"></section>
+    <section id="view-weapons" class="view"></section>
+    <section id="view-sets" class="view"></section>
+    <section id="view-builds" class="view"></section>
+  </main>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3 id="modalTitle"></h3>
+        <button class="icon-btn" data-close aria-label="Đóng">✕</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="data/snapshot.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/calc.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
