@@ -148,6 +148,7 @@
         </div>
 
         <div class="col col-arts">
+          <div class="panel rec" id="recPanel"></div>
           <div class="panel">
             <div class="panel-head">
               <h3>Thánh Di Vật</h3>
@@ -329,6 +330,101 @@
 
     $('#cvPill').textContent = 'CV ' + GI.critValue(state.artifacts).toFixed(1);
     $('#cvPill').title = 'Crit Value = 2 × TL Bạo + ST Bạo (dòng phụ)';
+    renderRec();
+  }
+
+  // ---------- gợi ý build / đội hình ----------
+  // 4 món: cả 5 món cùng bộ · 2+2: Hoa, Lông, Nón = bộ 1; Cát, Ly = bộ 2
+  const recSetLayout = (sets) => (sets.length === 1 ? Array(5).fill(sets[0]) : [sets[0], sets[0], sets[1], sets[1], sets[0]]);
+
+  function recHtml(rec, c, interactive) {
+    const curSets = state.artifacts.map((a) => a.set).join('|');
+    const curTeam = [...state.team].sort().join('|');
+    const sameChar = state.character === c.name;
+    return `
+      <div class="rec-role">
+        <span class="chip gold">${esc(rec.role)}</span>
+        ${rec.guess ? '<span class="chip" title="Chưa có guide chính thức, dự đoán theo bộ kỹ năng">Dự đoán</span>' : ''}
+        ${rec.auto ? '<span class="chip" title="Tự sinh theo chỉ số đột phá">Tự động</span>' : ''}
+      </div>
+      <div class="rec-block">
+        <div class="rec-title">Bộ thánh di vật</div>
+        ${rec.sets.map((opt, i) => {
+          const applied = sameChar && recSetLayout(opt.sets).join('|') === curSets;
+          return `
+          <div class="rec-item ${applied ? 'applied' : ''}">
+            <span class="rec-rank">${i + 1}</span>
+            <div class="rec-set-icons">${opt.sets.map((n) => img((data.setByName[n] || {}).pieces?.find(Boolean), n)).join('')}</div>
+            <div class="rec-body">
+              <div class="rec-name">${opt.sets.map((n) => `${esc(n)} <b>${opt.sets.length === 1 ? '4' : '2'}</b>`).join(' + ')}</div>
+              <div class="muted tiny">${opt.sets.map((n) => esc(setBonusText(n))).join(' · ')}</div>
+            </div>
+            ${interactive ? `<button class="btn btn-sm ${applied ? 'btn-ghost' : ''}" data-rec-set="${i}">${applied ? '✓ Đang dùng' : 'Áp dụng'}</button>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="rec-block">
+        <div class="rec-title">Dòng chính ${interactive ? '<button class="btn btn-sm btn-ghost" data-rec-main>Áp dụng</button>' : ''}</div>
+        <div class="rec-mains">
+          ${['Cát', 'Ly', 'Nón'].map((slot, i) => `<div><span class="muted small">${slot}</span><b>${rec.mainStats[i].map((s) => esc(shortName(s))).join(' / ')}</b></div>`).join('')}
+        </div>
+      </div>
+      <div class="rec-block">
+        <div class="rec-title">Đội hình</div>
+        ${rec.teams.map((t, i) => {
+          const applied = sameChar && [...t].sort().join('|') === curTeam;
+          return `
+          <div class="rec-item ${applied ? 'applied' : ''}">
+            <div class="rec-team">${[c.name, ...t].map((n) => {
+              const m = data.charByName[n];
+              return `<span class="rec-member" title="${esc(n)}" style="--ec:${ELEMENT_COLORS[m.element] || '#888'}">${img(m.icon, n)}<small>${esc(n)}</small></span>`;
+            }).join('')}</div>
+            ${interactive ? `<button class="btn btn-sm ${applied ? 'btn-ghost' : ''}" data-rec-team="${i}">${applied ? '✓ Đang dùng' : 'Áp dụng'}</button>` : ''}
+          </div>`;
+        }).join('') || '<span class="muted small">Chưa có gợi ý</span>'}
+      </div>`;
+  }
+
+  function renderRec() {
+    const panel = $('#recPanel');
+    const c = data.charByName[state.character];
+    const rec = c && GI.getRecommendation(data, c.name);
+    if (!panel || !rec) return;
+    const open = readJSON('gi-akasha:rec-open', true);
+    panel.innerHTML = `
+      <div class="panel-head">
+        <h3>✦ Gợi ý cho ${esc(c.name)}</h3>
+        <button class="btn btn-sm btn-ghost" data-rec-toggle>${open ? 'Thu gọn' : 'Mở rộng'}</button>
+      </div>
+      ${open ? recHtml(rec, c, true) : ''}`;
+  }
+
+  function applyRecSet(i) {
+    const rec = GI.getRecommendation(data, state.character);
+    const layout = recSetLayout(rec.sets[i].sets);
+    state.artifacts.forEach((a, slot) => { a.set = layout[slot]; });
+    commit(renderArtifacts, renderComputed);
+    toast('Đã áp dụng ' + rec.sets[i].label, 'ok');
+  }
+
+  function applyRecMain() {
+    const rec = GI.getRecommendation(data, state.character);
+    [2, 3, 4].forEach((slot, i) => {
+      const main = rec.mainStats[i].find((s) => GI.MAIN_STATS[slot].includes(s));
+      if (!main) return;
+      const a = state.artifacts[slot];
+      a.main = main;
+      a.subs.forEach((s) => { if (s.stat === main) { s.stat = ''; s.value = 0; } });
+    });
+    commit(renderArtifacts, renderComputed);
+    toast('Đã áp dụng dòng chính gợi ý', 'ok');
+  }
+
+  function applyRecTeam(i) {
+    const rec = GI.getRecommendation(data, state.character);
+    state.team = [0, 1, 2].map((j) => rec.teams[i][j] || '');
+    commit(renderTeam, renderComputed);
+    toast('Đã áp dụng đội hình gợi ý', 'ok');
   }
 
   function onBuilderEvent(e) {
@@ -344,6 +440,15 @@
       if (team && !team.disabled) return pickCharacter((name) => { state.team[+team.dataset.team - 1] = name; commit(renderTeam, renderComputed); }, true);
       const cons = t.closest('[data-cons]');
       if (cons) { state.constellation = +cons.dataset.cons; return commit(renderBuilder); }
+      const recSet = t.closest('[data-rec-set]');
+      if (recSet) return applyRecSet(+recSet.dataset.recSet);
+      const recTeam = t.closest('[data-rec-team]');
+      if (recTeam) return applyRecTeam(+recTeam.dataset.recTeam);
+      if (t.closest('[data-rec-main]')) return applyRecMain();
+      if (t.closest('[data-rec-toggle]')) {
+        writeJSON('gi-akasha:rec-open', !readJSON('gi-akasha:rec-open', true));
+        return renderRec();
+      }
       const ref = t.closest('[data-refine]');
       if (ref) { state.refine = +ref.dataset.refine; return commit(renderWeaponPanel, renderComputed); }
       if (!act) return;
@@ -413,6 +518,7 @@
       state.refine = 1;
     }
     commit(renderBuilder);
+    if (prev && prev.name !== name) toast(`Đã chọn ${name} — xem gợi ý build & đội hình ở mục ✦ Gợi ý`);
   }
 
   // ---------- pickers ----------
@@ -594,6 +700,10 @@
           </table>
           <button class="btn" data-use-char="${esc(c.name)}">Dùng trong Showcase →</button>
         </div>
+      </div>
+      <div class="rec detail-rec">
+        <h3 class="section-title">✦ Gợi ý build &amp; đội hình</h3>
+        ${recHtml(GI.getRecommendation(data, c.name), c, false)}
       </div>`, (root) => {
       root.querySelector('[data-use-char]').onclick = () => { closeModal(); selectCharacter(c.name); setView('builder'); };
     });
