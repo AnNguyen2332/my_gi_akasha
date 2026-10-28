@@ -10,7 +10,7 @@ Thuần HTML/CSS/JS, không cần build — mở `index.html` là chạy.
 | Tab | Tương ứng trong sheet | Mô tả |
 |---|---|---|
 | **Showcase** | `Showcase` + `Thánh_Di_Vật` | Chọn nhân vật, cấp, cung mệnh, vũ khí + tinh luyện, 5 món thánh di vật (bộ, dòng chính, 4 dòng phụ với gợi ý giá trị hợp lệ), đội hình 4 người. Tự tính chỉ số cuối, bộ đang kích hoạt, cộng hưởng nguyên tố, chỉ số cộng thêm, CV. Nhấn vào từng chỉ số để xem nguồn. |
-| **✦ Gợi ý** (trong Showcase) | — | Khi chọn nhân vật: gợi ý bộ thánh di vật (xếp hạng, 4 món hoặc 2+2), dòng chính Cát/Ly/Nón và 2 đội hình. Bấm “Áp dụng” để điền thẳng vào build. Dữ liệu ở `js/recommendations.js`. |
+| **✦ Gợi ý** (trong Showcase) | — | Khi chọn nhân vật: các kiểu build (vd. DPS / Hyperbloom), bộ thánh di vật xếp hạng (4 món hoặc 2+2), dòng chính Cát/Ly/Nón và tối đa 4 đội hình có xếp tier. Bấm “Áp dụng” để điền thẳng vào build. |
 | **Nhân Vật** | `Nhân_Vật_Database` | Tra cứu, lọc theo nguyên tố / vũ khí / quốc gia / độ hiếm, xem chỉ số căn bản & đột phá. |
 | **Vũ Khí** | `Vũ_Khí_Database` | Bảng vũ khí, lọc theo loại / độ hiếm, nội tại R1→R5. |
 | **Thánh Di Vật** | `Thánh_Di_Vật_Database` | Các bộ, hiệu ứng 2 món, bảng dòng chính & giá trị dòng phụ. |
@@ -34,13 +34,27 @@ Hoặc mở thẳng `index.html` bằng trình duyệt.
 node scripts/sync-data.mjs
 ```
 
+### Dữ liệu gợi ý build
+
+- `data/recommendations-data.js` được tạo từ [genshin-builds.com](https://genshin-builds.com) (hiện là bản v7.1). Cập nhật khi có patch mới:
+
+```bash
+node scripts/sync-recommendations.mjs
+```
+
+- `js/recommendations.js` đổi tên bộ / chỉ số / nhân vật từ tiếng Anh sang tên trong database. Ở đây cũng có các nhân vật mà nguồn
+  chưa có trang (`MANUAL`: Mitya, Valeriy, Danica, Tsaritsa — 3 nhân vật sau là dự đoán). Khi nguồn có trang, dữ liệu nguồn sẽ tự được ưu tiên.
+- Nếu nguồn dùng một bộ mới chưa có trong bảng `SETS`, bộ đó sẽ bị bỏ qua. Lúc đó chỉ cần thêm 1 dòng `id: 'Tên tiếng Việt'` vào bảng.
+
 ## Cấu trúc
 
 ```
 index.html
 css/style.css
 js/data.js     # đọc CSV từ sheet, chuẩn hoá dữ liệu
-js/recommendations.js # gợi ý bộ thánh di vật, dòng chính, đội hình
+js/recommendations.js # đổi dữ liệu gợi ý build sang tên trong database
+data/recommendations-data.js
+scripts/sync-recommendations.mjs
 js/calc.js     # công thức tính chỉ số (chuyển từ công thức LET trong sheet Showcase)
 js/app.js      # giao diện
 data/snapshot.js

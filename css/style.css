@@ -263,6 +263,13 @@ select:focus, input:focus { border-color: var(--gold-2); }
 .rec-member img, .rec-member .img-ph { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px var(--ec); background: var(--bg-2); }
 .rec-member small { font-size: 10px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-rec { margin-top: 8px; }
+.rec-tier {
+  flex: none; min-width: 28px; padding: 3px 6px; border-radius: 6px; text-align: center; font-size: 11px; font-weight: 700;
+  background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+}
+.rec-tier.t-SS { color: #1a1408; background: linear-gradient(180deg, #ffe39a, #e0a93f); border-color: #e0a93f; }
+.rec-tier.t-S { color: #f0d48c; border-color: var(--gold-2); }
+.rec-src { margin-top: 10px; }
 
 /* ---------- filters & tiles ---------- */
 .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
