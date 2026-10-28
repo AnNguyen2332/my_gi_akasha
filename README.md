@@ -9,12 +9,12 @@ Thuần HTML/CSS/JS, không cần build — mở `index.html` là chạy.
 
 | Tab | Tương ứng trong sheet | Mô tả |
 |---|---|---|
-| **Showcase** | `Showcase` + `Thánh_Di_Vật` | Chọn nhân vật, cấp, cung mệnh, vũ khí + tinh luyện, 5 món thánh di vật (bộ, dòng chính, 4 dòng phụ với gợi ý giá trị hợp lệ), đội hình 4 người. Tự tính chỉ số cuối, bộ đang kích hoạt, cộng hưởng nguyên tố, chỉ số cộng thêm, CV. Nhấn vào từng chỉ số để xem nguồn. |
-| **✦ Gợi ý** (trong Showcase) | — | Xem được cho cả 4 thành viên trong đội (áp dụng cho đồng đội sẽ đưa họ lên làm nhân vật chính; mỗi nhân vật giữ build riêng). Gồm: các kiểu build (vd. DPS / Hyperbloom), vũ khí xếp hạng (bấm để trang bị), bộ thánh di vật xếp hạng (4 món hoặc 2+2), dòng chính Cát/Ly/Nón và tối đa 4 đội hình có xếp tier. Bấm “Áp dụng” để điền thẳng vào build. |
+| **Showcase** | `Showcase` + `Thánh_Di_Vật` | Đội 4 người, **mỗi người một build riêng** (cấp, cung mệnh, vũ khí + tinh luyện, 5 món thánh di vật với dòng chính / dòng phụ). Bấm vào thành viên để build người đó. Tự tính chỉ số cuối, bộ đang kích hoạt, cộng hưởng nguyên tố, chỉ số cộng thêm, CV; nhấn vào từng chỉ số để xem nguồn. **Đội mới**: chọn 1 nhân vật rồi chọn đội gợi ý (có thể kèm build gợi ý cho cả 4 người) hoặc tự chọn từng thành viên. |
+| **✦ Gợi ý** (trong Showcase) | — | Gợi ý cho thành viên đang chọn: các kiểu build, vũ khí xếp hạng (bấm để trang bị), bộ thánh di vật (4 món hoặc 2+2), dòng chính Cát/Ly/Nón và đội hình. “Áp dụng” chỉ thay đổi build của người đang chọn; “+ Build” áp đội kèm build gợi ý cho cả 4 người (giữ dòng phụ). |
 | **Nhân Vật** | `Nhân_Vật_Database` | Tra cứu, lọc theo nguyên tố / vũ khí / quốc gia / độ hiếm, xem chỉ số căn bản & đột phá. |
 | **Vũ Khí** | `Vũ_Khí_Database` | Bảng vũ khí, lọc theo loại / độ hiếm, nội tại R1→R5. |
 | **Thánh Di Vật** | `Thánh_Di_Vật_Database` | Các bộ, hiệu ứng 2 món, bảng dòng chính & giá trị dòng phụ. |
-| **Build đã lưu** | — | Lưu nhiều build (localStorage), mở lại, xuất / nhập JSON. |
+| **Build đã lưu** | — | Lưu cả đội kèm build từng người (localStorage), mở lại, xuất / nhập JSON. |
 
 ## Chạy
 

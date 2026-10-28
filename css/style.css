@@ -145,13 +145,21 @@ select:focus, input:focus { border-color: var(--gold-2); }
 .cons-dot.lit { border-color: color-mix(in srgb, var(--ec) 70%, transparent); color: var(--ec); }
 .cons-dot.on { background: var(--ec); color: #111; border-color: var(--ec); font-weight: 700; }
 
-.team { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.team { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .team-slot {
   position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;
   border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer;
 }
 .team-slot:hover:not(:disabled) { border-color: var(--gold-2); }
-.team-slot.main { cursor: default; border-color: color-mix(in srgb, var(--ec) 60%, var(--line)); }
+.team-slot.active { border-color: var(--ec); background: color-mix(in srgb, var(--ec) 14%, var(--panel-2)); box-shadow: 0 0 0 1px var(--ec) inset; }
+.team-slot { min-width: 0; }
+.team-gear { display: block; width: 100%; text-align: center; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.team-panel { margin-bottom: 12px; }
+.team-picker { display: flex; flex-direction: column; gap: 8px; }
+.team-picker-actions { display: flex; flex-direction: column; gap: 4px; flex: none; }
+.build-mates { display: flex; gap: 4px; margin-top: 4px; }
+.build-mates img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: var(--panel-2); }
 .team-slot img, .team-slot .img-ph {
   width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
   background: color-mix(in srgb, var(--ec) 25%, var(--bg-2)); box-shadow: 0 0 0 2px var(--ec);
